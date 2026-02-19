@@ -1,0 +1,39 @@
+{
+  "name": "flutter-learning-platform",
+  "version": "1.0.0",
+  "description": "A comprehensive Learning Management System (LMS) for Flutter mobile development courses",
+  "main": "start-app.js",
+  "scripts": {
+    "start": "node start-app.js",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "setup": "npm run install:all && echo 'Setup complete! Configure .env files and run npm start'",
+    "git:init": "git init && git add . && git commit -m 'Initial commit: Flutter Learning Platform'",
+    "deploy:prod": "npm run build && cd backend && NODE_ENV=production npm start"
+  },
+  "keywords": [
+    "flutter",
+    "learning",
+    "education",
+    "lms",
+    "react",
+    "nodejs",
+    "mysql"
+  ],
+  "author": "Flutter Learning Platform",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/flutter-learning-platform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/flutter-learning-platform/issues"
+  },
+  "homepage": "https://github.com/your-username/flutter-learning-platform#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
