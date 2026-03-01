@@ -1,9 +1,5 @@
 const { Sequelize } = require('sequelize');
-const dns = require('dns');
 require('dotenv').config();
-
-// Force IPv4 DNS resolution
-dns.setDefaultResultOrder('ipv4first');
 
 // Determine if we're using a connection URL (production) or individual credentials (development)
 const databaseUrl = process.env.DATABASE_URL;
@@ -11,16 +7,24 @@ const databaseUrl = process.env.DATABASE_URL;
 let sequelize;
 
 if (databaseUrl) {
-  // Production: Use DATABASE_URL from environment (Supabase/Render)
-  sequelize = new Sequelize(databaseUrl, {
+  // Production: Parse the DATABASE_URL and force IPv4
+  const url = new URL(databaseUrl);
+  
+  sequelize = new Sequelize({
     dialect: 'postgres',
-    protocol: 'postgres',
+    host: url.hostname,
+    port: url.port || 5432,
+    username: url.username,
+    password: url.password,
+    database: url.pathname.slice(1), // Remove leading slash
     logging: false,
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: false // Required for Supabase
-      }
+        rejectUnauthorized: false
+      },
+      // Force IPv4
+      family: 4
     },
     pool: {
       max: 5,
