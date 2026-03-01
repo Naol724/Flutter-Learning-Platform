@@ -17,19 +17,45 @@ const quizRoutes = require('./routes/quiz');
 
 const app = express();
 const server = http.createServer(app);
+
+// Socket.IO configuration
+const socketOrigins = process.env.CORS_ORIGINS 
+  ? process.env.CORS_ORIGINS.split(',')
+  : ["http://localhost:5173", "http://localhost:5175", "http://localhost:5176"];
+
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5175", "http://localhost:5176"],
-    methods: ["GET", "POST"]
+    origin: socketOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5175", "http://localhost:5176"],
-  credentials: true
-}));
+
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = process.env.CORS_ORIGINS 
+      ? process.env.CORS_ORIGINS.split(',')
+      : ["http://localhost:5173", "http://localhost:5175", "http://localhost:5176"];
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({

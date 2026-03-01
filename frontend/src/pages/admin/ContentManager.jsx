@@ -290,6 +290,19 @@ const ContentManager = () => {
               {saving ? 'Saving...' : 'Save'}
             </button>
             <button
+              onClick={() => {
+                setContent(prev => ({ ...prev, isPublished: !prev.isPublished }))
+                setTimeout(saveContent, 100)
+              }}
+              className={`btn flex items-center justify-center text-xs sm:text-base lg:text-lg px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-3.5 font-semibold shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px] lg:min-h-[48px] ${
+                content.isPublished 
+                  ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
+                  : 'bg-green-500 hover:bg-green-600 text-white'
+              }`}
+            >
+              {content.isPublished ? 'Unpublish' : 'Publish'}
+            </button>
+            <button
               onClick={deleteContent}
               className="btn btn-danger flex items-center justify-center text-xs sm:text-base lg:text-lg px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-3.5 font-semibold shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px] lg:min-h-[48px]"
             >

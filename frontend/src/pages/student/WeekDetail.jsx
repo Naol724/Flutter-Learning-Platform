@@ -11,7 +11,8 @@ import {
   DocumentTextIcon,
   CloudArrowUpIcon,
   CheckCircleIcon,
-  ClockIcon
+  ClockIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -123,6 +124,21 @@ const WeekDetail = () => {
       toast.error(error.response?.data?.message || 'Failed to submit assignment')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleDeleteSubmission = async (submissionId) => {
+    if (!confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      await studentAPI.deleteSubmission(submissionId)
+      toast.success('Submission deleted successfully')
+      loadWeekDetails() // Reload to show updated status
+    } catch (error) {
+      console.error('Failed to delete submission:', error)
+      toast.error(error.response?.data?.message || 'Failed to delete submission')
     }
   }
 
@@ -522,7 +538,16 @@ const WeekDetail = () => {
                 {/* Submission Status */}
                 {latestSubmission && (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
-                    <h4 className="text-sm sm:text-base font-semibold mb-2 sm:mb-3">Latest Submission</h4>
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <h4 className="text-sm sm:text-base font-semibold">Latest Submission</h4>
+                      <button
+                        onClick={() => handleDeleteSubmission(latestSubmission.id)}
+                        className="btn bg-red-500 hover:bg-red-600 text-white flex items-center text-xs px-2 py-1"
+                      >
+                        <TrashIcon className="w-3 h-3 mr-1" />
+                        Delete
+                      </button>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                       <div>
                         <p><strong>Submitted:</strong> {format(new Date(latestSubmission.submittedAt), 'PPP p')}</p>
@@ -547,8 +572,27 @@ const WeekDetail = () => {
                         {latestSubmission.fileName && (
                           <p><strong>File:</strong> {latestSubmission.fileName}</p>
                         )}
+                        {latestSubmission.githubUrl && (
+                          <p>
+                            <strong>GitHub:</strong>{' '}
+                            <a 
+                              href={latestSubmission.githubUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary-600 hover:text-primary-800 underline"
+                            >
+                              View Repo
+                            </a>
+                          </p>
+                        )}
                       </div>
                     </div>
+                    {latestSubmission.description && (
+                      <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-200">
+                        <p><strong>Description:</strong></p>
+                        <p className="text-gray-700 mt-1 text-xs sm:text-sm">{latestSubmission.description}</p>
+                      </div>
+                    )}
                     {latestSubmission.feedback && (
                       <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-200">
                         <p><strong>Feedback:</strong></p>

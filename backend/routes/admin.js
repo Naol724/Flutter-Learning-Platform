@@ -19,7 +19,10 @@ const {
   getContentByType,
   toggleUserStatus,
   deleteUser,
-  createUser
+  createUser,
+  createWeek,
+  updateWeek,
+  deleteWeek
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -31,8 +34,8 @@ router.use(requireAdmin);
 // Validation rules
 const reviewSubmissionValidation = [
   body('score')
-    .isInt({ min: 0, max: 100 })
-    .withMessage('Score must be between 0 and 100'),
+    .isInt({ min: 0 })
+    .withMessage('Score must be a positive number'),
   body('feedback')
     .optional()
     .trim()
@@ -40,7 +43,7 @@ const reviewSubmissionValidation = [
     .withMessage('Feedback must not exceed 1000 characters'),
   body('status')
     .optional()
-    .isIn(['reviewed', 'approved', 'rejected'])
+    .isIn(['reviewed', 'approved', 'rejected', 'submitted'])
     .withMessage('Invalid status')
 ];
 
@@ -110,5 +113,8 @@ router.put('/week/:weekId/content', uploadNotes.single('notesFile'), handleUploa
 router.put('/week/:weekId/content/:type', updateContent);
 router.post('/week/:weekId/content/:type', addContent);
 router.post('/students/:studentId/approve-phase/:phaseId', approvePhaseCompletion);
+router.post('/week', createWeek);
+router.put('/week/:weekId', updateWeek);
+router.delete('/week/:weekId', deleteWeek);
 
 module.exports = router;

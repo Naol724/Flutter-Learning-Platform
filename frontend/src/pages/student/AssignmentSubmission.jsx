@@ -306,28 +306,48 @@ const AssignmentSubmission = () => {
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                     <div className="text-xs sm:text-sm text-gray-600">
                       {submission.fileName && `File: ${submission.fileName}`}
+                      {submission.githubUrl && (
+                        <>
+                          {submission.fileName && ' • '}
+                          <a 
+                            href={submission.githubUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary-600 hover:text-primary-800 underline"
+                          >
+                            GitHub Repo
+                          </a>
+                        </>
+                      )}
                       {submission.feedback && ' • Feedback available'}
                     </div>
                     
                     <div className="flex items-center space-x-2">
                       <Link
                         to={`/week/${weekId}`}
-                        className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                        className="btn btn-primary flex items-center text-xs px-3 py-1.5"
                       >
+                        <DocumentTextIcon className="w-3 h-3 mr-1" />
                         View
                       </Link>
-                      {/* Only show delete button for submissions that are not reviewed/approved */}
-                      {submission.status !== 'reviewed' && submission.status !== 'approved' && (
-                        <button
-                          onClick={() => handleDeleteSubmission(submission.id)}
-                          className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition-colors"
-                        >
-                          Delete
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleDeleteSubmission(submission.id)}
+                        className={`btn flex items-center text-xs px-3 py-1.5 ${
+                          submission.status === 'reviewed' || submission.status === 'approved'
+                            ? 'bg-gray-400 cursor-not-allowed opacity-50'
+                            : 'bg-red-600 hover:bg-red-700 text-white'
+                        }`}
+                        title={submission.status === 'reviewed' || submission.status === 'approved' 
+                          ? 'Cannot delete reviewed/approved submissions' 
+                          : 'Delete this submission'}
+                        disabled={submission.status === 'reviewed' || submission.status === 'approved'}
+                      >
+                        <TrashIcon className="w-3 h-3 mr-1" />
+                        Delete
+                      </button>
                     </div>
                   </div>
 
