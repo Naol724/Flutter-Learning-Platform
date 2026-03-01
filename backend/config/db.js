@@ -1,5 +1,9 @@
 const { Sequelize } = require('sequelize');
+const dns = require('dns');
 require('dotenv').config();
+
+// Force IPv4 DNS resolution
+dns.setDefaultResultOrder('ipv4first');
 
 // Determine if we're using a connection URL (production) or individual credentials (development)
 const databaseUrl = process.env.DATABASE_URL;
