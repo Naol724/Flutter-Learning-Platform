@@ -117,6 +117,17 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+// Log environment for debugging
+console.log('🔧 Starting server...');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Port:', PORT);
+console.log('Database URL exists:', !!process.env.DATABASE_URL);
+if (process.env.DATABASE_URL) {
+  // Log sanitized connection string (hide password)
+  const sanitized = process.env.DATABASE_URL.replace(/:([^:@]+)@/, ':****@');
+  console.log('Database connection:', sanitized);
+}
+
 // Database connection and server start
 db.authenticate()
   .then(() => {
@@ -128,7 +139,7 @@ db.authenticate()
     return Promise.resolve();
   })
   .then(() => {
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📍 API: http://localhost:${PORT}/api`);
       console.log(`📍 Health: http://localhost:${PORT}/api/health`);
@@ -138,11 +149,14 @@ db.authenticate()
   })
   .catch(err => {
     console.error('❌ Unable to connect to database:', err.message);
+    console.error('Full error:', err);
     console.log('\n💡 Troubleshooting:');
-    console.log('1. Make sure MySQL is running');
-    console.log('2. Check your database credentials in .env file');
-    console.log('3. Ensure database "flutter_learning_platform" exists');
-    console.log('4. Try: mysql -u root -p');
+    console.log('1. Check DATABASE_URL environment variable is set');
+    console.log('2. Verify Supabase database is running');
+    console.log('3. Check database credentials are correct');
+    console.log('4. Ensure SSL is properly configured');
+    process.exit(1);
+  });
     process.exit(1);
   });
 

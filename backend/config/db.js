@@ -2,7 +2,6 @@ const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
 // Determine if we're using a connection URL (production) or individual credentials (development)
-const isProduction = process.env.NODE_ENV === 'production';
 const databaseUrl = process.env.DATABASE_URL;
 
 let sequelize;
@@ -56,5 +55,14 @@ if (databaseUrl) {
     }
   );
 }
+
+// Test connection
+sequelize.authenticate()
+  .then(() => {
+    console.log('✅ Database connection test successful');
+  })
+  .catch(err => {
+    console.error('❌ Database connection test failed:', err.message);
+  });
 
 module.exports = sequelize;
