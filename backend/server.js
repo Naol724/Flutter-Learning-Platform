@@ -157,7 +157,5 @@ db.authenticate()
     console.log('4. Ensure SSL is properly configured');
     process.exit(1);
   });
-    process.exit(1);
-  });
 
 module.exports = { app, io };
