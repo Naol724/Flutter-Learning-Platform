@@ -24,14 +24,10 @@ const Submissions = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [expandedStudents, setExpandedStudents] = useState(new Set())
-  const [viewingSubmission, setViewingSubmission] = useState(null)
   const [reviewingSubmission, setReviewingSubmission] = useState(null)
-  const [reviewData, setReviewData] = useState({
-    score: '',
-    feedback: '',
-    status: 'reviewed'
-  })
+  const [reviewData, setReviewData] = useState({ score: '', feedback: '' })
   const [submitting, setSubmitting] = useState(false)
+  const [viewingSubmission, setViewingSubmission] = useState(null)
 
   useEffect(() => {
     loadSubmissions()
@@ -48,54 +44,16 @@ const Submissions = () => {
   }
 
   const handleViewSubmission = (submission) => {
-    setViewingSubmission(submission)
-  }
-
-  const handleReviewSubmission = (submission) => {
-    setReviewingSubmission(submission)
-    setReviewData({
-      score: submission.score || '',
-      feedback: submission.feedback || '',
-      status: submission.status === 'submitted' ? 'reviewed' : submission.status
-    })
-  }
-
-  const handleReviewChange = (e) => {
-    const { name, value } = e.target
-    setReviewData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
-
-  const submitReview = async (e) => {
-    e.preventDefault()
+    console.log('=== VIEW SUBMISSION DEBUG ===')
+    console.log('Submission:', submission)
+    console.log('Type:', submission.type)
+    console.log('FilePath:', submission.filePath)
+    console.log('FileName:', submission.fileName)
+    console.log('GithubUrl:', submission.githubUrl)
+    console.log('Description:', submission.description)
     
-    const maxScore = reviewingSubmission.type === 'quiz' 
-      ? reviewingSubmission.totalQuestions 
-      : 100
-
-    if (!reviewData.score || reviewData.score < 0 || reviewData.score > maxScore) {
-      toast.error(`Please enter a valid score (0-${maxScore})`)
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      await adminAPI.reviewSubmission(reviewingSubmission.id, {
-        score: parseInt(reviewData.score),
-        feedback: reviewData.feedback,
-        status: reviewData.status
-      })
-      toast.success('Submission reviewed successfully!')
-      setReviewingSubmission(null)
-      loadSubmissions()
-    } catch (error) {
-      console.error('Failed to review submission:', error)
-      toast.error(error.response?.data?.message || 'Failed to review submission')
-    } finally {
-      setSubmitting(false)
-    }
+    // Open view modal
+    setViewingSubmission(submission)
   }
 
   const handleDeleteSubmission = async (submissionId) => {
@@ -108,6 +66,39 @@ const Submissions = () => {
         console.error('Delete submission error:', error)
         toast.error('Failed to delete submission')
       }
+    }
+  }
+
+  const handleReviewSubmission = (submission) => {
+    setReviewingSubmission(submission)
+    setReviewData({
+      score: submission.score || '',
+      feedback: submission.feedback || ''
+    })
+  }
+
+  const handleSubmitReview = async () => {
+    if (!reviewData.score || reviewData.score < 0 || reviewData.score > 100) {
+      toast.error('Please enter a valid score between 0 and 100')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await adminAPI.reviewSubmission(reviewingSubmission.id, {
+        score: parseInt(reviewData.score),
+        feedback: reviewData.feedback,
+        status: 'reviewed'
+      })
+      toast.success('Submission reviewed successfully')
+      setReviewingSubmission(null)
+      setReviewData({ score: '', feedback: '' })
+      loadSubmissions() // Reload submissions
+    } catch (error) {
+      console.error('Review submission error:', error)
+      toast.error('Failed to review submission')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -339,13 +330,15 @@ const Submissions = () => {
                                         <EyeIcon className="w-3 h-3 mr-1" />
                                         View
                                       </button>
-                                      <button 
-                                        onClick={() => handleReviewSubmission(submission)}
-                                        className="flex items-center px-2 py-1 text-[10px] bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                                      >
-                                        <CheckCircleIcon className="w-3 h-3 mr-1" />
-                                        Review
-                                      </button>
+                                      {submission.type === 'assignment' && (
+                                        <button 
+                                          onClick={() => handleReviewSubmission(submission)}
+                                          className="flex items-center px-2 py-1 text-[10px] bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                                        >
+                                          <CheckCircleIcon className="w-3 h-3 mr-1" />
+                                          {submission.status === 'submitted' ? 'Review' : 'Re-review'}
+                                        </button>
+                                      )}
                                       <button 
                                         onClick={() => handleDeleteSubmission(submission.id)}
                                         className="flex items-center px-2 py-1 text-[10px] bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
@@ -389,144 +382,144 @@ const Submissions = () => {
 
         {/* View Submission Modal */}
         {viewingSubmission && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-4 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
-              <div className="mt-3">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base sm:text-lg font-medium text-gray-900">
-                    View {viewingSubmission.type === 'quiz' ? 'Quiz' : 'Assignment'} Submission
-                  </h3>
-                  <button
-                    onClick={() => setViewingSubmission(null)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <XCircleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
+                <h3 className="text-lg font-semibold text-gray-900">View Submission</h3>
+                <button
+                  onClick={() => setViewingSubmission(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="p-4 space-y-4">
+                {/* Student Info */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Student Information</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-gray-600">Name:</span>
+                      <p className="font-medium">{viewingSubmission.user.name}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Email:</span>
+                      <p className="font-medium">{viewingSubmission.user.email}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Week:</span>
+                      <p className="font-medium">Week {viewingSubmission.week.weekNumber}: {viewingSubmission.week.title}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Submitted:</span>
+                      <p className="font-medium">{format(new Date(viewingSubmission.submittedAt), 'MMM d, yyyy h:mm a')}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Type:</span>
+                      <p className="font-medium capitalize">{viewingSubmission.type}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Status:</span>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(viewingSubmission.status)}`}>
+                        {viewingSubmission.status}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Student Info */}
-                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">Student Information</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                {/* Assignment Details */}
+                {viewingSubmission.type === 'assignment' && (
+                  <div className="space-y-3">
+                    {viewingSubmission.description && (
                       <div>
-                        <strong>Name:</strong> {viewingSubmission.user.name}
+                        <h4 className="font-semibold text-gray-900 mb-2">Description</h4>
+                        <p className="text-gray-700 bg-gray-50 p-3 rounded">{viewingSubmission.description}</p>
                       </div>
-                      <div>
-                        <strong>Email:</strong> {viewingSubmission.user.email}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Submission Info */}
-                  <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
-                    <h4 className="text-xs sm:text-sm font-semibold text-blue-900 mb-2">Submission Details</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm text-blue-800">
-                      <div>
-                        <strong>Week:</strong> {viewingSubmission.week.weekNumber} - {viewingSubmission.week.title}
-                      </div>
-                      <div>
-                        <strong>Phase:</strong> {viewingSubmission.week.phase.number}
-                      </div>
-                      <div>
-                        <strong>Submitted:</strong> {format(new Date(viewingSubmission.submittedAt), 'PPP p')}
-                      </div>
-                      <div>
-                        <strong>Status:</strong> 
-                        <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(viewingSubmission.status)}`}>
-                          {viewingSubmission.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Score */}
-                  <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
-                    <h4 className="text-xs sm:text-sm font-semibold text-green-900 mb-2">Score</h4>
-                    <div className="text-green-800 text-xs sm:text-sm">
-                      {viewingSubmission.type === 'quiz' ? (
-                        <div>
-                          <strong>Quiz Score:</strong> {viewingSubmission.score}/{viewingSubmission.totalQuestions}
-                          <span className="ml-2">
-                            ({Math.round((viewingSubmission.score / viewingSubmission.totalQuestions) * 100)}%)
-                          </span>
-                        </div>
-                      ) : (
-                        viewingSubmission.score !== null ? (
-                          <div>
-                            <strong>Assignment Score:</strong> {viewingSubmission.score}/100
-                          </div>
-                        ) : (
-                          <div className="text-gray-500">Not graded yet</div>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Assignment specific details */}
-                  {viewingSubmission.type === 'assignment' && (
-                    <>
-                      {viewingSubmission.description && (
-                        <div className="bg-white border border-gray-200 p-3 sm:p-4 rounded-lg">
-                          <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">Description</h4>
-                          <p className="text-gray-700 text-xs sm:text-sm whitespace-pre-wrap">{viewingSubmission.description}</p>
-                        </div>
-                      )}
-
-                      {viewingSubmission.githubUrl && (
-                        <div className="bg-white border border-gray-200 p-3 sm:p-4 rounded-lg">
-                          <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">GitHub Repository</h4>
-                          <a
-                            href={viewingSubmission.githubUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary-600 hover:text-primary-800 underline text-xs sm:text-sm break-all"
-                          >
-                            {viewingSubmission.githubUrl}
-                          </a>
-                        </div>
-                      )}
-
-                      {viewingSubmission.fileName && (
-                        <div className="bg-white border border-gray-200 p-3 sm:p-4 rounded-lg">
-                          <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">Submitted File</h4>
-                          <div className="flex items-center space-x-2">
-                            <DocumentTextIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-                            <span className="text-xs sm:text-sm text-gray-700">{viewingSubmission.fileName}</span>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {/* Feedback */}
-                  {viewingSubmission.feedback && (
-                    <div className="bg-yellow-50 border border-yellow-200 p-3 sm:p-4 rounded-lg">
-                      <h4 className="text-xs sm:text-sm font-semibold text-yellow-900 mb-2">Instructor Feedback</h4>
-                      <p className="text-yellow-800 text-xs sm:text-sm whitespace-pre-wrap">{viewingSubmission.feedback}</p>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
-                    {viewingSubmission.githubUrl && (
-                      <a
-                        href={viewingSubmission.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm px-3 py-2"
-                      >
-                        Open GitHub Repo
-                      </a>
                     )}
-                    <button
-                      onClick={() => setViewingSubmission(null)}
-                      className="btn btn-secondary text-xs sm:text-sm px-3 py-2"
-                    >
-                      Close
-                    </button>
+                    
+                    {viewingSubmission.githubUrl && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">GitHub Repository</h4>
+                        <a
+                          href={viewingSubmission.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline break-all"
+                        >
+                          {viewingSubmission.githubUrl}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {viewingSubmission.filePath && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Uploaded File</h4>
+                        <button
+                          onClick={() => {
+                            const apiBaseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001'
+                            const fileUrl = `${apiBaseUrl}/uploads/assignments/${viewingSubmission.filePath}`
+                            window.open(fileUrl, '_blank')
+                          }}
+                          className="btn btn-primary flex items-center"
+                        >
+                          <DocumentTextIcon className="w-4 h-4 mr-2" />
+                          Open File in New Tab
+                        </button>
+                        <p className="text-xs text-gray-500 mt-1">File: {viewingSubmission.fileName || viewingSubmission.filePath}</p>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
+
+                {/* Quiz Details */}
+                {viewingSubmission.type === 'quiz' && (
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-2">Quiz Results</h4>
+                    <div className="text-2xl font-bold text-blue-600 mb-2">
+                      {viewingSubmission.score}/{viewingSubmission.totalQuestions}
+                    </div>
+                    <p className="text-gray-700">
+                      Percentage: {Math.round((viewingSubmission.score / viewingSubmission.totalQuestions) * 100)}%
+                    </p>
+                  </div>
+                )}
+
+                {/* Score and Feedback */}
+                {viewingSubmission.score !== null && viewingSubmission.type === 'assignment' && (
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-2">Grading</h4>
+                    <div className="text-2xl font-bold text-green-600 mb-2">
+                      {viewingSubmission.score}/100
+                    </div>
+                    {viewingSubmission.feedback && (
+                      <div className="mt-3">
+                        <span className="text-gray-600 font-medium">Feedback:</span>
+                        <p className="text-gray-700 mt-1">{viewingSubmission.feedback}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-4 border-t border-gray-200 flex justify-end space-x-2">
+                <button
+                  onClick={() => setViewingSubmission(null)}
+                  className="btn btn-secondary"
+                >
+                  Close
+                </button>
+                {viewingSubmission.type === 'assignment' && (
+                  <button
+                    onClick={() => {
+                      setViewingSubmission(null)
+                      handleReviewSubmission(viewingSubmission)
+                    }}
+                    className="btn btn-primary"
+                  >
+                    {viewingSubmission.status === 'submitted' ? 'Review Submission' : 'Re-review Submission'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -534,141 +527,63 @@ const Submissions = () => {
 
         {/* Review Modal */}
         {reviewingSubmission && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-4 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
-              <div className="mt-3">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base sm:text-lg font-medium text-gray-900">
-                    Review {reviewingSubmission.type === 'quiz' ? 'Quiz' : 'Assignment'} Submission
-                  </h3>
-                  <button
-                    onClick={() => setReviewingSubmission(null)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <XCircleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Review Submission</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  {reviewingSubmission.user.name} - Week {reviewingSubmission.week.weekNumber}
+                </p>
+              </div>
+              
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Score (0-100)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={reviewData.score}
+                    onChange={(e) => setReviewData(prev => ({ ...prev, score: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Enter score..."
+                  />
                 </div>
-
-                {/* Submission Info */}
-                <div className="mb-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
-                    <div>
-                      <strong>Student:</strong> {reviewingSubmission.user.name}
-                    </div>
-                    <div>
-                      <strong>Email:</strong> {reviewingSubmission.user.email}
-                    </div>
-                    <div>
-                      <strong>Week:</strong> {reviewingSubmission.week.weekNumber} - {reviewingSubmission.week.title}
-                    </div>
-                    <div>
-                      <strong>Submitted:</strong> {format(new Date(reviewingSubmission.submittedAt), 'MMM d, yyyy')}
-                    </div>
-                  </div>
-                  
-                  {reviewingSubmission.description && (
-                    <div className="mt-3">
-                      <strong className="text-xs sm:text-sm">Description:</strong>
-                      <p className="text-gray-700 mt-1 text-xs sm:text-sm">{reviewingSubmission.description}</p>
-                    </div>
-                  )}
-                  
-                  {reviewingSubmission.githubUrl && (
-                    <div className="mt-3">
-                      <strong className="text-xs sm:text-sm">GitHub URL:</strong>
-                      <a
-                        href={reviewingSubmission.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-600 hover:text-primary-800 ml-2 text-xs sm:text-sm break-all"
-                      >
-                        {reviewingSubmission.githubUrl}
-                      </a>
-                    </div>
-                  )}
-                  
-                  {reviewingSubmission.type === 'quiz' && (
-                    <div className="mt-3">
-                      <strong className="text-xs sm:text-sm">Current Quiz Score:</strong>
-                      <p className="text-gray-700 mt-1 text-xs sm:text-sm">
-                        {reviewingSubmission.score}/{reviewingSubmission.totalQuestions} 
-                        ({Math.round((reviewingSubmission.score / reviewingSubmission.totalQuestions) * 100)}%)
-                      </p>
-                    </div>
-                  )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Feedback
+                  </label>
+                  <textarea
+                    value={reviewData.feedback}
+                    onChange={(e) => setReviewData(prev => ({ ...prev, feedback: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    rows="4"
+                    placeholder="Provide feedback to the student..."
+                  />
                 </div>
-
-                {/* Review Form */}
-                <form onSubmit={submitReview} className="space-y-3 sm:space-y-4">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                      Score {reviewingSubmission.type === 'quiz' 
-                        ? `(0-${reviewingSubmission.totalQuestions})` 
-                        : '(0-100)'}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      name="score"
-                      min="0"
-                      max={reviewingSubmission.type === 'quiz' ? reviewingSubmission.totalQuestions : 100}
-                      required
-                      className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                      value={reviewData.score}
-                      onChange={handleReviewChange}
-                      placeholder="Enter score"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                      Feedback
-                    </label>
-                    <textarea
-                      name="feedback"
-                      className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
-                      rows="4"
-                      placeholder="Provide feedback to student..."
-                      value={reviewData.feedback}
-                      onChange={handleReviewChange}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                      Status
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="status"
-                      className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                      value={reviewData.status}
-                      onChange={handleReviewChange}
-                      required
-                    >
-                      <option value="reviewed">Reviewed</option>
-                      <option value="approved">Approved</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => setReviewingSubmission(null)}
-                      className="btn btn-secondary text-xs sm:text-sm px-3 py-2"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm px-3 py-2"
-                    >
-                      {submitting ? 'Submitting...' : 'Submit Review'}
-                    </button>
-                  </div>
-                </form>
+              </div>
+              
+              <div className="p-4 border-t border-gray-200 flex justify-end space-x-2">
+                <button
+                  onClick={() => {
+                    setReviewingSubmission(null)
+                    setReviewData({ score: '', feedback: '' })
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitReview}
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
+                  disabled={submitting}
+                >
+                  {submitting ? 'Submitting...' : 'Submit Review'}
+                </button>
               </div>
             </div>
           </div>

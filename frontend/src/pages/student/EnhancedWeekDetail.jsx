@@ -165,7 +165,7 @@ const EnhancedWeekDetail = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 mb-4 sm:mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate(-1)}
                 className="btn btn-secondary flex items-center text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 w-full sm:w-auto justify-center"
               >
                 <ArrowLeftIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />

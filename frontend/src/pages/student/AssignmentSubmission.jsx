@@ -154,13 +154,13 @@ const AssignmentSubmission = () => {
       <div className="max-w-4xl mx-auto py-8">
         {/* Header */}
         <div className="mb-6">
-          <Link
-            to={`/week/${weekId}`}
+          <button
+            onClick={() => navigate(-1)}
             className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
             Back to Week {week?.weekNumber}
-          </Link>
+          </button>
           
           <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
             Assignment Submission - Week {week?.weekNumber}

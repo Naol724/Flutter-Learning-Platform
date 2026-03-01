@@ -26,7 +26,7 @@ const CourseMap = () => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [checkingProgress, setCheckingProgress] = useState(false)
-  const [expandedPhases, setExpandedPhases] = useState(new Set())
+  const [expandedPhases, setExpandedPhases] = useState(new Set([1])) // Expand Phase 1 by default
 
   const handleNoteUpload = async (weekId, event) => {
     const file = event.target.files[0]

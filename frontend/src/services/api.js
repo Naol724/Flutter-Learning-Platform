@@ -30,16 +30,7 @@ api.interceptors.response.use(
     return response
   },
   async (error) => {
-    // Log the error for debugging
-    console.error('API Error:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message
-    })
-
     if (error.response?.status === 401) {
-      console.warn('Unauthorized - redirecting to login')
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
       window.location.href = '/login'
@@ -49,12 +40,7 @@ api.interceptors.response.use(
     // Handle other errors
     if (error.response?.status >= 500) {
       toast.error('Server error. Please try again later.')
-    } else if (error.code === 'ECONNABORTED') {
-      toast.error('Request timeout. Please check your connection.')
-    } else if (!error.response) {
-      toast.error('Network error. Please check your connection.')
     }
-    
     return Promise.reject(error)
   }
 )
@@ -105,12 +91,14 @@ export const adminAPI = {
   deleteSubmission: (submissionId) => api.delete(`/admin/submissions/${submissionId}`),
   getWeek: (weekId) => api.get(`/admin/week/${weekId}`),
   getWeekContent: (weekId) => api.get(`/admin/content/weeks/${weekId}/content`),
-  updateWeekContent: (weekId, data) => api.put(`/admin/content/weeks/${weekId}/content`, data),
   upsertWeekContent: (weekId, data) => api.put(`/admin/content/weeks/${weekId}/content`, data),
+  deleteWeekContent: (weekId) => api.delete(`/admin/content/weeks/${weekId}/content`),
+  updateWeekContent: (weekId, formData) => api.put(`/admin/week/${weekId}/content`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   createWeek: (data) => api.post('/admin/week', data),
   deleteWeek: (weekId) => api.delete(`/admin/week/${weekId}`),
   updateWeek: (weekId, data) => api.put(`/admin/week/${weekId}`, data),
-  deleteWeekContent: (weekId) => api.delete(`/admin/content/weeks/${weekId}/content`),
   getStudentsProgress: () => api.get('/admin/students/progress'),
   exportData: () => api.get('/admin/export'),
   getNotifications: () => api.get('/admin/notifications'),

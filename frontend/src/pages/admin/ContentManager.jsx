@@ -263,11 +263,11 @@ const ContentManager = () => {
           {/* Back Button */}
           <div className="flex items-start">
             <button
-              onClick={() => navigate('/admin/course-map')}
+              onClick={() => navigate(-1)}
               className="flex items-center text-xs sm:text-base lg:text-lg text-gray-600 hover:text-gray-900 transition-colors font-medium px-3 py-2 sm:px-4 sm:py-2.5 lg:px-5 lg:py-3 rounded-lg hover:bg-gray-100 min-h-[36px] lg:min-h-[44px]"
             >
               <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 mr-2" />
-              Back to Course Map
+              Back
             </button>
           </div>
           

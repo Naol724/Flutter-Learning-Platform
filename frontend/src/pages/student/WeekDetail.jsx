@@ -180,13 +180,13 @@ const WeekDetail = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <Link
-              to="/dashboard"
+            <button
+              onClick={() => navigate(-1)}
               className="btn btn-secondary flex items-center text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
             >
               <ArrowLeftIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Back
-            </Link>
+            </button>
             <div>
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                 Week {week.weekNumber}: {week.title}

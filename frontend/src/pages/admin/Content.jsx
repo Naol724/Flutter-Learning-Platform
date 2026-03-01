@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { adminAPI } from '../../services/api'
 import Layout from '../../components/Layout'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -13,6 +13,7 @@ import toast from 'react-hot-toast'
 
 const Content = () => {
   const { weekId } = useParams()
+  const navigate = useNavigate()
   const [week, setWeek] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -187,13 +188,13 @@ const Content = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-          <Link
-            to="/admin/course-map"
+          <button
+            onClick={() => navigate(-1)}
             className="flex items-center text-[10px] sm:text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeftIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            Back to Course Map
-          </Link>
+            Back
+          </button>
         </div>
 
         {/* Week Header */}
