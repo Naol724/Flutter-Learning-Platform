@@ -2,11 +2,14 @@ const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
 // Determine if we're using a connection URL (production) or individual credentials (development)
-const databaseUrl = process.env.DATABASE_URL;
+let databaseUrl = process.env.DATABASE_URL;
 
 let sequelize;
 
 if (databaseUrl) {
+  // Clean the URL - remove any whitespace/newlines
+  databaseUrl = databaseUrl.trim();
+  
   // Production: Parse the DATABASE_URL and force IPv4
   const url = new URL(databaseUrl);
   
@@ -15,7 +18,7 @@ if (databaseUrl) {
     host: url.hostname,
     port: url.port || 5432,
     username: url.username,
-    password: url.password,
+    password: decodeURIComponent(url.password), // Decode URL-encoded password
     database: url.pathname.slice(1), // Remove leading slash
     logging: false,
     dialectOptions: {
